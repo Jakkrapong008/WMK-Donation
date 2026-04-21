@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยอดเงินบริจาคการทำบุญทอดผ้าป่าสามัคคี โรงเรียนวัดแม่กะ</title>
+    
+    <!-- Google Fonts: Sarabun -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js สำหรับวาดกราฟสถิติ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Sarabun', 'sans-serif'],
+                    },
+                    colors: {
+                        temple: {
+                            red: '#991B1B', // แดงเลือดหมู
+                            darkred: '#7F1D1D',
+                            yellow: '#FBBF24', // เหลืองทอง
+                            lightyellow: '#FEF3C7',
+                            bg: '#FAFAF9'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #FAFAF9;
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+        }
+
+        /* Ticker Animation */
+        .ticker-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            background-color: #7F1D1D;
+            color: #FEF3C7;
+            padding: 8px 0;
+            border-top: 2px solid #FBBF24;
+            border-bottom: 2px solid #FBBF24;
+        }
+
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 100s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Custom Scrollbar for table */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #991B1B;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="fixed inset-0 bg-white/90 z-50 flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <h3 class="text-xl font-semibold text-temple-red">กำลังโหลดข้อมูลใบบุญ...</h3>
+    </div>
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-b from-temple-darkred to-temple-red pt-10 pb-6 px-4 shadow-xl text-center relative overflow-hidden">
+        <!-- Decorative pattern logic (optional CSS background) -->
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#FBBF24 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+        <div class="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+            <img src="https://img2.pic.in.th/logob0b7643db577ceee.png" alt="Logo" class="h-32 w-auto mb-4 drop-shadow-lg bg-white p-2 rounded-full border-4 border-temple-yellow">
+            
+            <h1 class="text-3xl md:text-5xl font-bold text-temple-yellow mb-3 drop-shadow-md leading-tight">
+                ยอดเงินบริจาคการทำบุญทอดผ้าป่าสามัคคี
+            </h1>
+            <h2 class="text-xl md:text-2xl text-white font-medium mb-3 tracking-wide">
+                “89 ปี คืนสู่เหย้า ศิษย์เก่า ปันรัก ปันน้ำใจ เพื่อพัฒนาโรงเรียนวัดแม่กะ”
+            </h2>
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 inline-block border border-white/20">
+                <p class="text-sm md:text-base text-temple-lightyellow opacity-90 mb-1">
+                    <i class="fas fa-map-marker-alt mr-2"></i>ทอดถวาย ณ โรงเรียนวัดแม่กะ ตำบลแม่แตง อำเภอแม่แตง จังหวัดเชียงใหม่
+                </p>
+                <p class="text-sm md:text-base font-semibold text-white">
+                    <i class="fas fa-calendar-alt mr-2"></i>วันพฤหัสบดี ที่ 30 เดือน เมษายน 2569 เวลา 18.00 น.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Scrolling Ticker -->
+    <div class="ticker-wrapper shadow-md">
+        <div class="ticker-content" id="tickerContent">
+            <!-- Ticker items will be injected here -->
+            <span class="ticker-item"><i class="fas fa-pray mr-2"></i>กำลังรวบรวมรายนามผู้ใจบุญ...</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        
+        <!-- Hero Section: Big Numbers & Progress -->
+        <section class="bg-white rounded-2xl shadow-xl p-6 md:p-10 mb-12 border-t-4 border-temple-red relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5 text-temple-red text-9xl pointer-events-none">
+                <i class="fas fa-hand-holding-heart"></i>
+            </div>
+            
+            <div class="text-center relative z-10">
+                <p class="text-gray-500 text-lg md:text-xl font-medium mb-2">ยอดบริจาคสมทบทุนรวมทั้งสิ้น</p>
+                <h2 id="totalAmount" class="text-5xl md:text-7xl lg:text-8xl font-bold text-temple-red mb-2 drop-shadow-sm">
+                    0.00
+                </h2>
+                <p class="text-gray-500 font-medium text-xl">บาท</p>
+
+                <!-- Progress Bar -->
+                <div class="mt-8 max-w-2xl mx-auto">
+                    <div class="flex justify-between text-sm font-semibold text-gray-600 mb-2">
+                        <span>เป้าหมายการระดมทุน</span>
+                        <span id="targetAmountText">1,000,000 บาท</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-8 relative shadow-inner overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 h-full transition-all duration-1500 ease-out flex items-center justify-end pr-2" style="width: 0%">
+                            <span id="progressText" class="text-white font-bold text-sm drop-shadow-md">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            
+            <!-- Section 1: Financial Donations -->
+            <section class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-[600px]">
+                <div class="bg-temple-red text-white p-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-coins text-temple-yellow mr-3 text-2xl"></i> รายนามผู้บริจาคเงิน
+                    </h3>
+                    <span id="moneyCount" class="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold">0 รายการ</span>
+                </div>
+                
+                <div class="p-4 border-b border-gray-100 bg-gray-50">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="ค้นหารายชื่อผู้บริจาค..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-temple-red focus:border-transparent font-sans">
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-auto table-container p-0">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-100 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-3 text-gray-600 font-semibold whitespace-nowrap">วันที่</th>
+                                <th class="p-3 text-gray-600 font-semibold">ชื่อผู้บริจาค</th>
+                                <th class="p-3 text-gray-600 font-semibold text-right whitespace-nowrap">ยอดบริจาค (บาท)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moneyTableBody" class="divide-y divide-gray-100">
+                            <!-- Data injected here via JS -->
+                        </tbody>
+                    </table>
+                    <div id="noMoneyData" class="hidden text-center py-10 text-gray-500">
+                        ไม่พบข้อมูลรายชื่อที่คุณค้นหา
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Item Donations -->
+            <section class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-[600px]">
+                <div class="bg-temple-yellow text-temple-darkred p-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-box-open mr-3 text-2xl"></i> รายนามผู้บริจาคสิ่งของ
+                    </h3>
+                    <span id="itemCount" class="bg-temple-darkred/10 px-3 py-1 rounded-full text-sm font-semibold">0 รายการ</span>
+                </div>
+                
+                <div class="flex-1 overflow-auto p-4 bg-gray-50 table-container">
+                    <div id="itemGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Card Data injected here via JS -->
+                    </div>
+                    <div id="noItemData" class="hidden text-center py-10 text-gray-500 w-full col-span-full">
+                        ยังไม่มีข้อมูลการบริจาคสิ่งของ
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Section 3: Chart Statistics -->
+        <section class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden p-6 md:p-8">
+            <div class="mb-6 border-b border-gray-100 pb-4">
+                <h3 class="text-xl font-bold flex items-center text-temple-red">
+                    <i class="fas fa-chart-line mr-3 text-2xl text-temple-yellow"></i> สถิติการบริจาครายวัน
+                </h3>
+            </div>
+            <div class="relative h-64 md:h-96 w-full">
+                <canvas id="donationChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-12">
+        <p class="mb-2">ขออำนาจคุณพระศรีรัตนตรัย จงดลบันดาลให้ท่านและครอบครัวประสบแต่ความสุขความเจริญ</p>
+        <p class="text-sm">© 2569 โรงเรียนวัดแม่กะ | ระบบแสดงผลยอดบริจาคอัตโนมัติ</p>
+    </footer>
+
+    <script>
+        // === Configuration ===
+        // ใส่ URL Web App ของคุณที่นี่
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjANlKjhPlHzA2AbeMlbZp1D2VdH74bmsa6XA42BkEegI9qzaeLfeTg1chsvq7xLOQ/exec';
+        
+        // เป้าหมายการระดมทุน (บาท) - เปลี่ยนตัวเลขได้ตามต้องการ
+        const TARGET_AMOUNT = 397801; 
+
+        // ตัวแปรเก็บข้อมูลเพื่อใช้ในการค้นหา
+        let globalMoneyData = [];
+
+        // ฟังก์ชันแปลงวันที่จากรูปแบบต่างๆ (รวมถึง DD/MM/YYYY) เป็น Date Object
+        const parseDateString = (dateString) => {
+            if (!dateString) return new Date(0);
+            // ตรวจสอบว่ามาในรูปแบบ วัน/เดือน/ปี หรือไม่
+            if (typeof dateString === 'string' && dateString.includes('/')) {
+                const datePart = dateString.split(' ')[0]; // เผื่อมีเวลาติดมาด้วย
+                const parts = datePart.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // เดือนใน JS เริ่มที่ 0
+                    let year = parseInt(parts[2], 10);
+                    if (year > 2500) year -= 543; // ถ้าปีในชีทเป็น พ.ศ. ให้แปลงกลับเป็น ค.ศ. ก่อนสร้าง Date
+                    return new Date(year, month, day);
+                }
+            }
+            return new Date(dateString);
+        };
+
+        // ฟังก์ชันฟอร์แมตตัวเลขการเงิน
+        const formatMoney = (amount) => {
+            return new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+        };
+
+        // ฟังก์ชันฟอร์แมตวันที่แบบไทย
+        const formatDate = (dateString) => {
+            if (!dateString) return '-';
+            try {
+                const date = parseDateString(dateString);
+                if(isNaN(date.getTime())) return dateString; // ถ้าไม่ใช่วันที่ ให้คืนค่าเดิม
+                const day = date.getDate();
+                const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                const month = thaiMonths[date.getMonth()];
+                let year = date.getFullYear();
+                if (year < 2500) year += 543; // แปลง ค.ศ. เป็น พ.ศ. แบบเต็มปี
+                return `${day} ${month} ${year}`;
+            } catch (e) {
+                return dateString;
+            }
+        };
+
+        // ฟังก์ชันหา Icon สำหรับสิ่งของ
+        const getItemIcon = (itemName) => {
+            const name = itemName.toLowerCase();
+            if (name.includes('พัดลม')) return { icon: 'fa-fan', color: 'text-blue-500', bg: 'bg-blue-100' };
+            if (name.includes('หนังสือ') || name.includes('สมุด')) return { icon: 'fa-book', color: 'text-green-600', bg: 'bg-green-100' };
+            if (name.includes('ข้าว')) return { icon: 'fa-bowl-rice', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+            if (name.includes('น้ำ')) return { icon: 'fa-bottle-water', color: 'text-cyan-500', bg: 'bg-cyan-100' };
+            if (name.includes('กีฬา') || name.includes('บอล')) return { icon: 'fa-volleyball', color: 'text-orange-500', bg: 'bg-orange-100' };
+            if (name.includes('คอม')) return { icon: 'fa-desktop', color: 'text-gray-700', bg: 'bg-gray-200' };
+            if (name.includes('สี')) return { icon: 'fa-paint-roller', color: 'text-purple-500', bg: 'bg-purple-100' };
+            if (name.includes('โต๊ะ') || name.includes('เก้าอี้')) return { icon: 'fa-chair', color: 'text-amber-700', bg: 'bg-amber-100' };
+            if (name.includes('เสื้อ')) return { icon: 'fa-shirt', color: 'text-pink-500', bg: 'bg-pink-100' };
+            if (name.includes('ยา')) return { icon: 'fa-pills', color: 'text-red-500', bg: 'bg-red-100' };
+            
+            // Default
+            return { icon: 'fa-box-open', color: 'text-temple-red', bg: 'bg-red-50' };
+        };
+
+        // ข้อมูลจำลอง (Mock Data) ใช้ในกรณีที่โหลดจาก Google Sheets ไม่ได้ (เช่น ติดปัญหา CORS หรือพรีวิว)
+        const mockData = {
+            money: [
+                {"วันที่": "2026-04-01", "ชื่อผู้บริจาค": "คุณสมชาย ใจดี", "ยอดบริจาค": 5000},
+                {"วันที่": "2026-04-02", "ชื่อผู้บริจาค": "ครอบครัวรักบุญ", "ยอดบริจาค": 2500},
+                {"วันที่": "2026-04-03", "ชื่อผู้บริจาค": "ศิษย์เก่า รุ่น 25", "ยอดบริจาค": 10000},
+                {"วันที่": "2026-04-04", "ชื่อผู้บริจาค": "ด.ช.มานะ มานี", "ยอดบริจาค": 500}
+            ],
+            items: [
+                {"วันที่": "2026-04-01", "ชื่อผู้บริจาค": "ร้านค้าเกษตรพัฒนา", "สิ่งของที่บริจาค": "พัดลม 5 ตัว"},
+                {"วันที่": "2026-04-02", "ชื่อผู้บริจาค": "คุณวิชัย", "สิ่งของที่บริจาค": "หนังสืออ่านเล่น 50 เล่ม"},
+                {"วันที่": "2026-04-03", "ชื่อผู้บริจาค": "หจก. เชียงใหม่", "สิ่งของที่บริจาค": "คอมพิวเตอร์ 2 เครื่อง"},
+                {"วันที่": "2026-04-04", "ชื่อผู้บริจาค": "ชาวบ้านหมู่ 3", "สิ่งของที่บริจาค": "ข้าวสาร 10 กระสอบ"}
+            ]
+        };
+
+        // ฟังก์ชันโหลดข้อมูลหลัก
+        async function fetchDonationData() {
+            try {
+                // แสดง loading
+                document.getElementById('loading').style.display = 'flex';
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                processData(result);
+
+            } catch (error) {
+                console.warn('พบปัญหาการเชื่อมต่อข้อมูล (อาจเกิดจาก CORS หรือ ลิงก์ Apps Script ยังไม่เปิดเป็นสาธารณะ) ระบบกำลังใช้ข้อมูลจำลองแทน:', error);
+                // สลับไปใช้ Mock Data เพื่อป้องกันหน้าเว็บค้าง
+                processData(mockData);
+            } finally {
+                // ซ่อน loading
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // ฟังก์ชันจัดการและเตรียมข้อมูลก่อนแสดงผล
+        function processData(result) {
+            // คาดหวัง JSON: { money: [...], items: [...] }
+            const moneyData = result.money || [];
+            const itemData = result.items || [];
+
+            // แปลงยอดเงินเป็นตัวเลขและกรองข้อมูลที่ว่างออก (ตัดเครื่องหมาย , ออกก่อนแปลงเพื่อป้องกัน Error)
+            globalMoneyData = moneyData.filter(row => row['ชื่อผู้บริจาค']).map(row => ({
+                date: row['วันที่'],
+                name: row['ชื่อผู้บริจาค'],
+                amount: parseFloat(String(row['ยอดบริจาค']).replace(/,/g, '')) || 0
+            }));
+
+            const validItemData = itemData.filter(row => row['ชื่อผู้บริจาค'] && row['สิ่งของที่บริจาค']);
+
+            renderDashboard(globalMoneyData, validItemData);
+        }
+
+        // ฟังก์ชันแสดงผลบนหน้าเว็บ
+        function renderDashboard(moneyData, itemData) {
+            
+            // 1. คำนวณยอดรวม & Progress Bar
+            const total = moneyData.reduce((sum, current) => sum + current.amount, 0);
+            
+            // Animation วิ่งตัวเลขยอดรวม
+            animateValue("totalAmount", 0, total, 1500);
+
+            // คำนวณ %
+            document.getElementById('targetAmountText').innerText = formatMoney(TARGET_AMOUNT) + " บาท";
+            let percent = (total / TARGET_AMOUNT) * 100;
+            if (percent > 100) percent = 100; // ล็อคไม่ให้เกินหลอด
+            
+            setTimeout(() => {
+                document.getElementById('progressBar').style.width = percent + '%';
+                document.getElementById('progressText').innerText = percent.toFixed(1) + '%';
+            }, 500);
+
+            // 2. สร้างข้อความ Ticker
+            let tickerHtml = '';
+            
+            // สุ่มหรือเลือกข้อมูลล่าสุดมาแสดงใน Ticker (เอา 10 รายการล่าสุด)
+            const recentMoney = [...moneyData].reverse().slice(0, 10);
+            const recentItems = [...itemData].reverse().slice(0, 5);
+
+            recentMoney.forEach(m => {
+                tickerHtml += `<span class="ticker-item"><i class="fas fa-hand-holding-usd text-yellow-400 mr-2"></i>ขออนุโมทนาบุญ คุณ${m.name} บริจาค ${formatMoney(m.amount)} บาท</span>`;
+            });
+            recentItems.forEach(i => {
+                tickerHtml += `<span class="ticker-item"><i class="fas fa-gift text-yellow-400 mr-2"></i>ขอขอบคุณ คุณ${i['ชื่อผู้บริจาค']} บริจาค ${i['สิ่งของที่บริจาค']}</span>`;
+            });
+
+            // ปลอมให้ยาวขึ้นเพื่อการวนลูปที่เนียนตา
+            tickerHtml += tickerHtml; 
+            document.getElementById('tickerContent').innerHTML = tickerHtml;
+
+            // 3. Render ตารางเงิน
+            document.getElementById('moneyCount').innerText = moneyData.length + " รายการ";
+            renderMoneyTable(moneyData);
+
+            // 4. Render การ์ดสิ่งของ
+            document.getElementById('itemCount').innerText = itemData.length + " รายการ";
+            renderItemsGrid(itemData);
+
+            // 5. Render กราฟสถิติ
+            renderChart(moneyData);
+        }
+
+        let myChart = null;
+
+        // ฟังก์ชันวาดกราฟสถิติรายวัน
+        function renderChart(data) {
+            if (data.length === 0) return;
+
+            // จัดกลุ่มยอดบริจาคตามวันที่
+            const grouped = {};
+            data.forEach(item => {
+                // ใช้ parseDateString เพื่อให้ค่า Timestamp ถูกต้องสำหรับการเรียงลำดับในกราฟ
+                let ts = parseDateString(item.date).getTime();
+                if (isNaN(ts)) ts = item.date; // Fallback ถ้าแปลงไม่ได้
+                
+                if (!grouped[ts]) {
+                    grouped[ts] = {
+                        label: formatDate(item.date),
+                        amount: 0
+                    };
+                }
+                grouped[ts].amount += item.amount;
+            });
+
+            // เรียงลำดับข้อมูลตามเวลา
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                if (!isNaN(a) && !isNaN(b)) return a - b;
+                return 0; 
+            });
+
+            const labels = sortedKeys.map(k => grouped[k].label);
+            const amounts = sortedKeys.map(k => grouped[k].amount);
+
+            const ctx = document.getElementById('donationChart').getContext('2d');
+            
+            // ลบกราฟเดิมออกก่อนถ้าวาดใหม่
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ยอดบริจาค (บาท)',
+                        data: amounts,
+                        borderColor: '#991B1B', // temple-red
+                        backgroundColor: 'rgba(153, 27, 27, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FBBF24', // temple-yellow
+                        pointBorderColor: '#991B1B',
+                        pointHoverBackgroundColor: '#991B1B',
+                        pointHoverBorderColor: '#FBBF24',
+                        fill: true,
+                        tension: 0.3 // ความโค้งของเส้น
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: { family: 'Sarabun', size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            titleFont: { family: 'Sarabun' },
+                            bodyFont: { family: 'Sarabun' },
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + formatMoney(context.parsed.y) + ' บาท';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: { family: 'Sarabun' },
+                                callback: function(value) {
+                                    return value.toLocaleString('th-TH');
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { family: 'Sarabun' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ฟังก์ชันวาดตารางเงิน
+        function renderMoneyTable(data) {
+            const tbody = document.getElementById('moneyTableBody');
+            const noData = document.getElementById('noMoneyData');
+            
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+            
+            noData.classList.add('hidden');
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                // สลับสีบรรทัด (Zebra)
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-red-50 transition-colors' : 'bg-gray-50 hover:bg-red-50 transition-colors';
+                
+                tr.innerHTML = `
+                    <td class="p-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-100">${formatDate(row.date)}</td>
+                    <td class="p-3 font-medium text-gray-800 border-b border-gray-100">${row.name}</td>
+                    <td class="p-3 text-right font-bold text-temple-red border-b border-gray-100">${formatMoney(row.amount)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ฟังก์ชันวาดการ์ดสิ่งของ
+        function renderItemsGrid(data) {
+            const grid = document.getElementById('itemGrid');
+            const noData = document.getElementById('noItemData');
+            
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            }
+
+            noData.classList.add('hidden');
+
+            data.forEach(row => {
+                const itemName = row['สิ่งของที่บริจาค'];
+                const style = getItemIcon(itemName);
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-start space-x-4';
+                
+                card.innerHTML = `
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full ${style.bg} flex items-center justify-center">
+                        <i class="fas ${style.icon} ${style.color} text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-gray-900 truncate" title="${itemName}">${itemName}</p>
+                        <p class="text-sm text-gray-500 truncate mt-1">ผู้บริจาค: <span class="font-medium text-gray-800">${row['ชื่อผู้บริจาค']}</span></p>
+                        <p class="text-xs text-gray-400 mt-1"><i class="far fa-clock mr-1"></i>${formatDate(row['วันที่'])}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ระบบค้นหารายชื่อในตารางเงิน
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.toLowerCase();
+            const filteredData = globalMoneyData.filter(item => 
+                item.name.toLowerCase().includes(keyword)
+            );
+            renderMoneyTable(filteredData);
+        });
+
+        // Animation นับตัวเลขขึ้น
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // Ease out quad
+                const easeProgress = progress * (2 - progress);
+                const currentVal = start + easeProgress * (end - start);
+                obj.innerHTML = formatMoney(currentVal);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // เริ่มต้นทำงานเมื่อโหลดหน้าเว็บเสร็จ
+        window.onload = () => {
+            fetchDonationData();
+        };
+
+    </script>
+</body>
+</html>
