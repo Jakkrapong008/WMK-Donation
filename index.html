@@ -157,6 +157,22 @@
                 </h2>
                 <p class="text-gray-500 font-medium text-xl">บาท</p>
 
+                <!-- 3 Boxes for Donation Types -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 mt-8 mb-6 max-w-3xl mx-auto">
+                    <div class="bg-green-50/80 p-3 md:p-4 rounded-xl border border-green-200 shadow-sm">
+                        <p class="text-gray-600 text-xs md:text-sm font-medium mb-1"><i class="fas fa-money-bill-wave text-green-600 mr-1"></i> เงินสด</p>
+                        <p id="totalCash" class="text-lg md:text-2xl font-bold text-temple-red">0.00</p>
+                    </div>
+                    <div class="bg-blue-50/80 p-3 md:p-4 rounded-xl border border-blue-200 shadow-sm">
+                        <p class="text-gray-600 text-xs md:text-sm font-medium mb-1"><i class="fas fa-qrcode text-blue-600 mr-1"></i> พร้อมเพย์</p>
+                        <p id="totalPromptPay" class="text-lg md:text-2xl font-bold text-temple-red">0.00</p>
+                    </div>
+                    <div class="bg-purple-50/80 p-3 md:p-4 rounded-xl border border-purple-200 shadow-sm">
+                        <p class="text-gray-600 text-xs md:text-sm font-medium mb-1"><i class="fas fa-university text-purple-600 mr-1"></i> โอนเงิน</p>
+                        <p id="totalTransfer" class="text-lg md:text-2xl font-bold text-temple-red">0.00</p>
+                    </div>
+                </div>
+
                 <!-- Progress Bar -->
                 <div class="mt-8 max-w-2xl mx-auto">
                     <div class="flex justify-between text-sm font-semibold text-gray-600 mb-2">
@@ -321,10 +337,10 @@
         // ข้อมูลจำลอง (Mock Data) ใช้ในกรณีที่โหลดจาก Google Sheets ไม่ได้ (เช่น ติดปัญหา CORS หรือพรีวิว)
         const mockData = {
             money: [
-                {"วันที่": "2026-04-01", "ชื่อผู้บริจาค": "คุณสมชาย ใจดี", "ยอดบริจาค": 5000},
-                {"วันที่": "2026-04-02", "ชื่อผู้บริจาค": "ครอบครัวรักบุญ", "ยอดบริจาค": 2500},
-                {"วันที่": "2026-04-03", "ชื่อผู้บริจาค": "ศิษย์เก่า รุ่น 25", "ยอดบริจาค": 10000},
-                {"วันที่": "2026-04-04", "ชื่อผู้บริจาค": "ด.ช.มานะ มานี", "ยอดบริจาค": 500}
+                {"วันที่": "2026-04-01", "ชื่อผู้บริจาค": "คุณสมชาย ใจดี", "ยอดบริจาค": 5000, "ประเภทรายการ": "โอนเงิน"},
+                {"วันที่": "2026-04-02", "ชื่อผู้บริจาค": "ครอบครัวรักบุญ", "ยอดบริจาค": 2500, "ประเภทรายการ": "พร้อมเพย์"},
+                {"วันที่": "2026-04-03", "ชื่อผู้บริจาค": "ศิษย์เก่า รุ่น 25", "ยอดบริจาค": 10000, "ประเภทรายการ": "เงินสด"},
+                {"วันที่": "2026-04-04", "ชื่อผู้บริจาค": "ด.ช.มานะ มานี", "ยอดบริจาค": 500, "ประเภทรายการ": "พร้อมเพย์"}
             ],
             items: [
                 {"วันที่": "2026-04-01", "ชื่อผู้บริจาค": "ร้านค้าเกษตรพัฒนา", "สิ่งของที่บริจาค": "พัดลม 5 ตัว"},
@@ -372,7 +388,8 @@
             globalMoneyData = moneyData.filter(row => row['ชื่อผู้บริจาค']).map(row => ({
                 date: row['วันที่'],
                 name: row['ชื่อผู้บริจาค'],
-                amount: parseFloat(String(row['ยอดบริจาค']).replace(/,/g, '')) || 0
+                amount: parseFloat(String(row['ยอดบริจาค']).replace(/,/g, '')) || 0,
+                type: row['ประเภทรายการ'] ? row['ประเภทรายการ'].trim() : 'ไม่ระบุ'
             }));
 
             const validItemData = itemData.filter(row => row['ชื่อผู้บริจาค'] && row['สิ่งของที่บริจาค']);
@@ -383,11 +400,24 @@
         // ฟังก์ชันแสดงผลบนหน้าเว็บ
         function renderDashboard(moneyData, itemData) {
             
-            // 1. คำนวณยอดรวม & Progress Bar
-            const total = moneyData.reduce((sum, current) => sum + current.amount, 0);
+            // 1. คำนวณยอดรวม & Progress Bar & แยกประเภท
+            let total = 0;
+            let totalCash = 0;
+            let totalPromptPay = 0;
+            let totalTransfer = 0;
+
+            moneyData.forEach(current => {
+                total += current.amount;
+                if (current.type === 'เงินสด') totalCash += current.amount;
+                else if (current.type === 'พร้อมเพย์') totalPromptPay += current.amount;
+                else if (current.type === 'โอนเงิน') totalTransfer += current.amount;
+            });
             
-            // Animation วิ่งตัวเลขยอดรวม
+            // Animation วิ่งตัวเลขยอดรวมและยอดแยกประเภท
             animateValue("totalAmount", 0, total, 1500);
+            animateValue("totalCash", 0, totalCash, 1500);
+            animateValue("totalPromptPay", 0, totalPromptPay, 1500);
+            animateValue("totalTransfer", 0, totalTransfer, 1500);
 
             // คำนวณ %
             document.getElementById('targetAmountText').innerText = formatMoney(TARGET_AMOUNT) + " บาท";
@@ -407,10 +437,10 @@
             const recentItems = [...itemData].reverse().slice(0, 5);
 
             recentMoney.forEach(m => {
-                tickerHtml += `<span class="ticker-item"><i class="fas fa-hand-holding-usd text-yellow-400 mr-2"></i>ขออนุโมทนาบุญ คุณ${m.name} บริจาค ${formatMoney(m.amount)} บาท</span>`;
+                tickerHtml += `<span class="ticker-item"><i class="fas fa-hand-holding-usd text-yellow-400 mr-2"></i>ขออนุโมทนาบุญ ${m.name} บริจาค ${formatMoney(m.amount)} บาท</span>`;
             });
             recentItems.forEach(i => {
-                tickerHtml += `<span class="ticker-item"><i class="fas fa-gift text-yellow-400 mr-2"></i>ขอขอบคุณ คุณ${i['ชื่อผู้บริจาค']} บริจาค ${i['สิ่งของที่บริจาค']}</span>`;
+                tickerHtml += `<span class="ticker-item"><i class="fas fa-gift text-yellow-400 mr-2"></i>ขอขอบคุณ ${i['ชื่อผู้บริจาค']} บริจาค ${i['สิ่งของที่บริจาค']}</span>`;
             });
 
             // ปลอมให้ยาวขึ้นเพื่อการวนลูปที่เนียนตา
@@ -546,7 +576,10 @@
                 tr.innerHTML = `
                     <td class="p-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-100">${formatDate(row.date)}</td>
                     <td class="p-3 font-medium text-gray-800 border-b border-gray-100">${row.name}</td>
-                    <td class="p-3 text-right font-bold text-temple-red border-b border-gray-100">${formatMoney(row.amount)}</td>
+                    <td class="p-3 text-right border-b border-gray-100">
+                        <span class="font-bold text-temple-red block">${formatMoney(row.amount)}</span>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-1">${row.type}</span>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
